@@ -29,6 +29,13 @@
             height: auto;
             margin: 10px;
         }
+        .video-container {
+            margin-top: 20px;
+        }
+        iframe {
+            width: 560px;
+            height: 315px;
+        }
     </style>
 </head>
 <body>
@@ -52,9 +59,33 @@
                 <img src="https://static.vecteezy.com/system/resources/previews/018/930/718/original/discord-logo-discord-icon-transparent-free-png.png" alt="Discord">
             </a>
         </div>
+
+        <!-- Dernière vidéo YouTube en temps réel -->
+        <div class="video-container">
+            <iframe id="latestVideo" frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen></iframe>
+        </div>
     </main>
     <footer>
         <p>© 2025 - Mon Site</p>
     </footer>
+
+    <!-- Script pour récupérer la dernière vidéo YouTube -->
+    <script>
+        const apiKey = "AIzaSyCBRGm16P-cMVn3CcB3uLdr2qC6YpQrMNk"; // Remplace par ta clé API YouTube
+        const channelId = "UCBoCsOpd_Bv99SHcrX2k1Vg"; // Remplace par l'ID de ta chaîne
+
+        async function getLatestVideo() {
+            const response = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&order=date&part=snippet&type=video&maxResults=1`);
+            const data = await response.json();
+            if (data.items.length > 0) {
+                const videoId = data.items[0].id.videoId;
+                document.getElementById("latestVideo").src = `https://www.youtube.com/embed/${videoId}`;
+            }
+        }
+
+        getLatestVideo();
+    </script>
 </body>
 </html>
