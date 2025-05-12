@@ -36,6 +36,23 @@
             width: 560px;
             height: 315px;
         }
+        .wiki-container {
+            margin-top: 20px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        input, textarea, button {
+            margin: 10px;
+            width: 100%;
+            padding: 10px;
+        }
+        .page {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: white;
+        }
     </style>
 </head>
 <body>
@@ -62,27 +79,32 @@
 
         <!-- Dernière vidéo YouTube en temps réel -->
         <div class="video-container">
-            <iframe id="latestVideo" frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen></iframe>
+            <iframe id="latestVideo" frameborder="0" allowfullscreen></iframe>
+        </div>
+
+        <!-- Wiki : Création et affichage de pages -->
+        <div class="wiki-container">
+            <h2>Créer une Page Wiki</h2>
+            <input type="text" id="title" placeholder="Titre de la page">
+            <textarea id="content" placeholder="Contenu de la page"></textarea>
+            <button onclick="addPage()">Ajouter la page</button>
+            <h2>Pages du Wiki</h2>
+            <div id="pages"></div>
         </div>
     </main>
     <footer>
         <p>© 2025 - Mon Site</p>
     </footer>
 
-    <!-- Script optimisé -->
     <script>
-        const apiKey = "TA_CLE_API_YOUTUBE"; // Remplace par ta clé API YouTube
-        const channelId = "UCXXXXXX"; // Remplace par l'ID de ta chaîne
-        const cacheKey = "latestYouTubeVideo"; // Clé de stockage local
-        const cacheTime = 6 * 60 * 60 * 1000; // Mise à jour toutes les 6 heures
-
         async function getLatestVideo() {
+            const apiKey = "TA_CLE_API_YOUTUBE";
+            const channelId = "UCXXXXXX";
+            const cacheKey = "latestYouTubeVideo";
+            const cacheTime = 6 * 60 * 60 * 1000;
             const now = Date.now();
             const cachedData = JSON.parse(localStorage.getItem(cacheKey));
 
-            // Vérifie si les données sont encore valides
             if (cachedData && now - cachedData.timestamp < cacheTime) {
                 document.getElementById("latestVideo").src = `https://www.youtube.com/embed/${cachedData.videoId}`;
                 return;
@@ -94,16 +116,40 @@
                 if (data.items.length > 0) {
                     const videoId = data.items[0].id.videoId;
                     document.getElementById("latestVideo").src = `https://www.youtube.com/embed/${videoId}`;
-
-                    // Stocke la vidéo localement
                     localStorage.setItem(cacheKey, JSON.stringify({ videoId, timestamp: now }));
                 }
             } catch (error) {
-                console.error("Erreur lors de la récupération de la vidéo :", error);
+                console.error("Erreur vidéo :", error);
             }
         }
 
+        function addPage() {
+            const title = document.getElementById("title").value;
+            const content = document.getElementById("content").value;
+            if (title && content) {
+                let pages = JSON.parse(localStorage.getItem("wikiPages")) || [];
+                pages.push({ title, content });
+                localStorage.setItem("wikiPages", JSON.stringify(pages));
+                loadPages();
+            } else {
+                alert("Remplis tous les champs !");
+            }
+        }
+
+        function loadPages() {
+            const pages = JSON.parse(localStorage.getItem("wikiPages")) || [];
+            const container = document.getElementById("pages");
+            container.innerHTML = "";
+            pages.forEach(page => {
+                const div = document.createElement("div");
+                div.classList.add("page");
+                div.innerHTML = `<h3>${page.title}</h3><p>${page.content}</p>`;
+                container.appendChild(div);
+            });
+        }
+
         getLatestVideo();
+        window.onload = loadPages;
     </script>
 </body>
 </html>
