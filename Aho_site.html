@@ -101,6 +101,7 @@
                     <h3>${page.title}</h3>
                     <p>${page.content}</p>
                     <p class="share-link" onclick="copyLink('${page.id}')">Partager</p>
+                    <button onclick="saveToGitHub('${page.id}')">Enregistrer sur GitHub</button>
                 `;
                 container.appendChild(div);
             });
@@ -111,6 +112,42 @@
             navigator.clipboard.writeText(link).then(() => {
                 alert("Lien copié ! Vous pouvez le partager.");
             });
+        }
+
+        async function saveToGitHub(id) {
+            const token = "TON_ACCESS_TOKEN_GITHUB"; // Remplace par ton token GitHub
+            const repo = "TON_NOM_DU_REPO"; // Ton dépôt GitHub où stocker les pages
+            const owner = "TON_NOM_UTILISATEUR"; // Ton nom d’utilisateur GitHub
+            const path = `wiki/${id}.json`; // Fichier unique par page
+            const pages = JSON.parse(localStorage.getItem("wikiPages")) || [];
+            const page = pages.find(p => p.id === id);
+            if (!page) {
+                alert("Erreur : Page introuvable !");
+                return;
+            }
+            const content = btoa(JSON.stringify(page));
+
+            try {
+                const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `token ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: `Ajout de la page Wiki : ${page.title}`,
+                        content: content
+                    })
+                });
+
+                if (response.ok) {
+                    alert("Page enregistrée sur GitHub !");
+                } else {
+                    alert("Erreur lors de l’enregistrement.");
+                }
+            } catch (error) {
+                console.error("Erreur API GitHub :", error);
+            }
         }
 
         loadPages();
