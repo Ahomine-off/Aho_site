@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Site GitHub Pages</title>
+    <title>Wiki Collaboratif</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,25 +16,6 @@
             background-color: #333;
             color: white;
             padding: 10px;
-        }
-        footer {
-            margin-top: 20px;
-            font-size: 14px;
-        }
-        .logo-container {
-            margin-top: 20px;
-        }
-        .logo-container img {
-            width: 100px;
-            height: auto;
-            margin: 10px;
-        }
-        .video-container {
-            margin-top: 20px;
-        }
-        iframe {
-            width: 560px;
-            height: 315px;
         }
         .wiki-container {
             margin-top: 20px;
@@ -53,38 +34,21 @@
             margin: 10px 0;
             background-color: white;
         }
+        .share-link {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #007BFF;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
     <header>
-        <h1>Bienvenue sur mon site !</h1>
+        <h1>Wiki Collaboratif</h1>
     </header>
     <main>
-        <p>Ceci est un site hébergé gratuitement sur GitHub Pages.</p>
-        
-        <!-- Widget Discord ajouté -->
-        <iframe src="https://discord.com/widget?id=1371061963932569671&theme=dark" width="500" height="600" 
-                allowtransparency="true" frameborder="0" 
-                sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
-        
-        <!-- Logos YouTube & Discord cliquables -->
-        <div class="logo-container">
-            <a href="https://www.youtube.com/@Ahomine-officiel" target="_blank">
-                <img src="https://www.freeiconspng.com/uploads/youtube-logo-png-transparent-image-5.png" alt="YouTube">
-            </a>
-            <a href="https://discord.gg/NsnBk9CS5N" target="_blank">
-                <img src="https://static.vecteezy.com/system/resources/previews/018/930/718/original/discord-logo-discord-icon-transparent-free-png.png" alt="Discord">
-            </a>
-        </div>
-
-        <!-- Dernière vidéo YouTube en temps réel -->
-        <div class="video-container">
-            <iframe id="latestVideo" frameborder="0" allowfullscreen></iframe>
-        </div>
-
-        <!-- Wiki : Création et affichage de pages -->
         <div class="wiki-container">
-            <h2>Créer une Page Wiki</h2>
+            <h2>Créer une Page</h2>
             <input type="text" id="title" placeholder="Titre de la page">
             <textarea id="content" placeholder="Contenu de la page"></textarea>
             <button onclick="addPage()">Ajouter la page</button>
@@ -92,35 +56,10 @@
             <div id="pages"></div>
         </div>
     </main>
-    <footer>
-        <p>© 2025 - Mon Site</p>
-    </footer>
 
     <script>
-        async function getLatestVideo() {
-            const apiKey = "TA_CLE_API_YOUTUBE";
-            const channelId = "UCXXXXXX";
-            const cacheKey = "latestYouTubeVideo";
-            const cacheTime = 6 * 60 * 60 * 1000;
-            const now = Date.now();
-            const cachedData = JSON.parse(localStorage.getItem(cacheKey));
-
-            if (cachedData && now - cachedData.timestamp < cacheTime) {
-                document.getElementById("latestVideo").src = `https://www.youtube.com/embed/${cachedData.videoId}`;
-                return;
-            }
-
-            try {
-                const response = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&order=date&part=snippet&type=video&maxResults=1`);
-                const data = await response.json();
-                if (data.items.length > 0) {
-                    const videoId = data.items[0].id.videoId;
-                    document.getElementById("latestVideo").src = `https://www.youtube.com/embed/${videoId}`;
-                    localStorage.setItem(cacheKey, JSON.stringify({ videoId, timestamp: now }));
-                }
-            } catch (error) {
-                console.error("Erreur vidéo :", error);
-            }
+        function generateId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
         }
 
         function addPage() {
@@ -128,28 +67,53 @@
             const content = document.getElementById("content").value;
             if (title && content) {
                 let pages = JSON.parse(localStorage.getItem("wikiPages")) || [];
-                pages.push({ title, content });
+                const id = generateId();
+                pages.push({ id, title, content });
                 localStorage.setItem("wikiPages", JSON.stringify(pages));
                 loadPages();
+                alert("Page créée ! Partagez ce lien : " + window.location.href + "?page=" + id);
             } else {
                 alert("Remplis tous les champs !");
             }
         }
 
         function loadPages() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pageId = urlParams.get("page");
             const pages = JSON.parse(localStorage.getItem("wikiPages")) || [];
             const container = document.getElementById("pages");
             container.innerHTML = "";
+
+            if (pageId) {
+                const page = pages.find(p => p.id === pageId);
+                if (page) {
+                    container.innerHTML = `<div class="page"><h3>${page.title}</h3><p>${page.content}</p></div>`;
+                } else {
+                    container.innerHTML = `<p>Cette page n'existe pas.</p>`;
+                }
+                return;
+            }
+
             pages.forEach(page => {
                 const div = document.createElement("div");
                 div.classList.add("page");
-                div.innerHTML = `<h3>${page.title}</h3><p>${page.content}</p>`;
+                div.innerHTML = `
+                    <h3>${page.title}</h3>
+                    <p>${page.content}</p>
+                    <p class="share-link" onclick="copyLink('${page.id}')">Partager</p>
+                `;
                 container.appendChild(div);
             });
         }
 
-        getLatestVideo();
-        window.onload = loadPages;
+        function copyLink(id) {
+            const link = window.location.href.split('?')[0] + "?page=" + id;
+            navigator.clipboard.writeText(link).then(() => {
+                alert("Lien copié ! Vous pouvez le partager.");
+            });
+        }
+
+        loadPages();
     </script>
 </body>
 </html>
