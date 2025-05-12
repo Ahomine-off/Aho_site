@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Site GitHub Pages</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+        }
+        footer {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .logo-container {
+            margin-top: 20px;
+        }
+        .logo-container img {
+            width: 100px;
+            height: auto;
+            margin: 10px;
+        }
+        .video-container {
+            margin-top: 20px;
+        }
+        iframe {
+            width: 560px;
+            height: 315px;
+        }
+        .wiki-link {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Bienvenue sur mon site !</h1>
+    </header>
+    <main>
+        <p>Ceci est un site hébergé gratuitement sur GitHub Pages.</p>
+        
+        <!-- Widget Discord ajouté -->
+        <iframe src="https://discord.com/widget?id=1371061963932569671&theme=dark" width="500" height="600" 
+                allowtransparency="true" frameborder="0" 
+                sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+        
+        <!-- Logos YouTube & Discord cliquables -->
+        <div class="logo-container">
+            <a href="https://www.youtube.com/@Ahomine-officiel" target="_blank">
+                <img src="https://www.freeiconspng.com/uploads/youtube-logo-png-transparent-image-5.png" alt="YouTube">
+            </a>
+            <a href="https://discord.gg/NsnBk9CS5N" target="_blank">
+                <img src="https://static.vecteezy.com/system/resources/previews/018/930/718/original/discord-logo-discord-icon-transparent-free-png.png" alt="Discord">
+            </a>
+        </div>
+
+        <!-- Texte avec lien vers le Wiki -->
+        <p class="wiki-link">
+            🔥 **Découvrez le Wiki collaboratif !** ➡️ 
+            <a href="https://ahomine-off.github.io/Aho_site/wiki.html" target="_blank">Accédez au Wiki ici</a>
+        </p>
+
+        <!-- Dernière vidéo YouTube en temps réel -->
+        <div class="video-container">
+            <iframe id="latestVideo" frameborder="0" allowfullscreen></iframe>
+        </div>
+    </main>
+    <footer>
+        <p>© 2025 - Mon Site</p>
+    </footer>
+
+    <script>
+        async function getLatestVideo() {
+            const apiKey = "TA_CLE_API_YOUTUBE";
+            const channelId = "UCXXXXXX";
+            const cacheKey = "latestYouTubeVideo";
+            const cacheTime = 6 * 60 * 60 * 1000;
+            const now = Date.now();
+            const cachedData = JSON.parse(localStorage.getItem(cacheKey));
+
+            if (cachedData && now - cachedData.timestamp < cacheTime) {
+                document.getElementById("latestVideo").src = `https://www.youtube.com/embed/${cachedData.videoId}`;
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&order=date&part=snippet&type=video&maxResults=1`);
+                const data = await response.json();
+                if (data.items.length > 0) {
+                    const videoId = data.items[0].id.videoId;
+                    document.getElementById("latestVideo").src = `https://www.youtube.com/embed/${videoId}`;
+                    localStorage.setItem(cacheKey, JSON.stringify({ videoId, timestamp: now }));
+                }
+            } catch (error) {
+                console.error("Erreur vidéo :", error);
+            }
+        }
+
+        getLatestVideo();
+    </script>
+</body>
+</html>
